@@ -215,6 +215,12 @@ export function Menu({ onToggleMenu }: Menu) {
                 </button>
               </Link>
 
+              <Link to="/checkin" onClick={handleMenuItemClick}>
+                <button className="w-full text-left rounded-full p-3 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300">
+                  Check-in
+                </button>
+              </Link>
+
               <Link to="/about" onClick={handleMenuItemClick}>
                 <button className="w-full text-left rounded-full p-3 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300">
                   Quem Somos
@@ -327,6 +333,12 @@ export function Menu({ onToggleMenu }: Menu) {
               <Link to="/calculators">
                 <button className="rounded-full p-2 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300 ease-in-out">
                   Calculadoras
+                </button>
+              </Link>
+
+              <Link to="/checkin">
+                <button className="rounded-full p-2 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300 ease-in-out">
+                  Check-in
                 </button>
               </Link>
 
