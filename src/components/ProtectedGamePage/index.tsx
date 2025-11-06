@@ -1,23 +1,28 @@
 import { ReactNode, useState, useEffect } from "react";
 import { AuthModal } from "../AuthModal";
+import { useToken } from "../../hooks/useToken";
 
 interface ProtectedGamePageProps {
   children: ReactNode;
 }
 
 export function ProtectedGamePage({ children }: ProtectedGamePageProps) {
+  const { token, setToken } = useToken();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Verifica se o usuário já está autenticado
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
+    const storedToken = localStorage.getItem("token");
+    if (storedToken && !token) {
+      setToken(storedToken);
+    }
+    setIsAuthenticated(!!storedToken || !!token);
     setIsLoading(false);
-  }, []);
+  }, [token, setToken]);
 
-  const handleLoginSuccess = (token: string) => {
-    localStorage.setItem("token", token);
+  const handleLoginSuccess = (newToken: string) => {
+    setToken(newToken);
     setIsAuthenticated(true);
   };
 
@@ -32,7 +37,11 @@ export function ProtectedGamePage({ children }: ProtectedGamePageProps) {
   return (
     <>
       {/* Conteúdo da página (sempre renderizado, mas desfocado se não autenticado) */}
-      <div className={isAuthenticated ? "" : "blur-md pointer-events-none select-none"}>
+      <div
+        className={
+          isAuthenticated ? "" : "blur-md pointer-events-none select-none"
+        }
+      >
         {children}
       </div>
 
