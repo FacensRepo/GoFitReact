@@ -1,8 +1,11 @@
-import { useMutation } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import { EyeIcon, EyeSlashIcon, XMarkIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
 import { CREATE_USER } from "./createUser";
 import { useToken } from "../../hooks/useToken";
+import toast from "react-hot-toast";
+import { SIGN_IN } from "../../pages/LogIn/signIn";
+// import { useNavigate } from "react-router-dom";
 
 interface AuthModalProps {
   onClose?: () => void;
@@ -10,27 +13,33 @@ interface AuthModalProps {
 }
 
 export function AuthModal({}: AuthModalProps) {
-  const { setToken } = useToken();
+  const { setToken, setUserName } = useToken();
+  // const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
 
-  // const [modalError, setModalError] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordConfirmationError, setPasswordConfirmationError] =
-    useState("");
-  const [emailError, setEmailError] = useState("");
-  const [nameError, setNameError] = useState("");
+  // Estados para Login
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [_loginError, setLoginError] = useState("");
 
-  // const [modalLogin, setModalLogin] = useState(false);
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  // Estados para Cadastro
+  const [signupData, setSignupData] = useState({
     name: "",
     email: "",
     password: "",
     passwordConfirmation: "",
   });
+  const [signupErrors, setSignupErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    passwordConfirmation: "",
+  });
+  const [signupLoading, setSignupLoading] = useState(false);
+
+  // Estados de UI
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [createUser] = useMutation(CREATE_USER);
 
@@ -39,113 +48,195 @@ export function AuthModal({}: AuthModalProps) {
     return emailRegex.test(email);
   };
 
-  const isFormValid =
-    Object.values(formData).every((value) => value.trim() !== "") &&
-    !emailError &&
-    formData.password.length >= 6 &&
-    formData.password === formData.passwordConfirmation;
+  const isSignupFormValid =
+    Object.values(signupData).every((value) => value.trim() !== "") &&
+    !signupErrors.email &&
+    !signupErrors.name &&
+    !signupErrors.password &&
+    !signupErrors.passwordConfirmation &&
+    signupData.password.length >= 8 &&
+    signupData.password === signupData.passwordConfirmation;
 
-  const handleInputChange = (
+  const handleSignupInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setSignupData({ ...signupData, [name]: value });
+
+    const newErrors = { ...signupErrors };
 
     if (name === "name") {
-      setNameError(value.trim() === "" ? "Preencha o campo nome!" : "");
+      newErrors.name = value.trim() === "" ? "Preencha o campo nome!" : "";
     }
 
     if (name === "email") {
       if (value.trim() === "") {
-        setEmailError("Preencha o campo email!");
+        newErrors.email = "Preencha o campo email!";
       } else if (!validateEmail(value)) {
-        setEmailError("É necessário acrescentar um email válido!");
+        newErrors.email = "É necessário acrescentar um email válido!";
       } else {
-        setEmailError("");
+        newErrors.email = "";
       }
     }
 
     if (name === "password") {
       if (value === "") {
-        setPasswordError("Preencha o campo senha!");
-      } else if (value.length < 6) {
-        setPasswordError("A senha deve conter ao menos 6 caracteres!");
+        newErrors.password = "Preencha o campo senha!";
+      } else if (value.length < 8) {
+        newErrors.password = "A senha deve conter ao menos 8 caracteres!";
       } else {
-        setPasswordError("");
+        newErrors.password = "";
       }
 
       // Revalidar confirmação de senha se já foi preenchida
-      if (formData.passwordConfirmation !== "") {
-        setPasswordConfirmationError(
-          value !== formData.passwordConfirmation
+      if (signupData.passwordConfirmation !== "") {
+        newErrors.passwordConfirmation =
+          value !== signupData.passwordConfirmation
             ? "As senhas não coincidem!"
-            : ""
-        );
+            : "";
       }
     }
 
     if (name === "passwordConfirmation") {
       if (value === "") {
-        setPasswordConfirmationError(
-          "Preencha o campo de confirmação de senha!"
-        );
-      } else if (value !== formData.password) {
-        setPasswordConfirmationError("As senhas não coincidem!");
+        newErrors.passwordConfirmation =
+          "Preencha o campo de confirmação de senha!";
+      } else if (value !== signupData.password) {
+        newErrors.passwordConfirmation = "As senhas não coincidem!";
       } else {
-        setPasswordConfirmationError("");
+        newErrors.passwordConfirmation = "";
       }
     }
+
+    setSignupErrors(newErrors);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validação final antes do envio
-    if (!isLogin) {
-      if (formData.name.trim() === "") {
-        setNameError("Preencha o campo nome!");
-        return;
-      }
-      if (formData.password !== formData.passwordConfirmation) {
-        setPasswordConfirmationError("As senhas não coincidem!");
-        return;
-      }
-    }
-
-    if (!validateEmail(formData.email)) {
-      setEmailError("É necessário acrescentar um email válido!");
+    if (signupData.name.trim() === "") {
+      toast.error("Preencha o campo nome!");
       return;
     }
 
-    if (formData.password.length < 6) {
-      setPasswordError("A senha deve conter ao menos 6 caracteres!");
+    if (!validateEmail(signupData.email)) {
+      toast.error("É necessário acrescentar um email válido!");
       return;
     }
 
-    setLoading(true);
+    if (signupData.password.length < 8) {
+      toast.error("A senha deve conter ao menos 8 caracteres!");
+      return;
+    }
+
+    if (signupData.password !== signupData.passwordConfirmation) {
+      toast.error("As senhas não coincidem!");
+      return;
+    }
+
+    setSignupLoading(true);
 
     try {
       const { data } = await createUser({
         variables: {
           input: {
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            passwordConfirmation: formData.passwordConfirmation,
+            name: signupData.name,
+            email: signupData.email,
+            password: signupData.password,
+            passwordConfirmation: signupData.passwordConfirmation,
           },
         },
       });
 
-      if (data?.createUser?.metadata?.token) {
-        setToken(data.createUser.metadata.token);
-        window.location.reload();
+      if (data?.createUser) {
+        toast.success("Usuário cadastrado com sucesso!");
+
+        // Limpar formulário de cadastro
+        setSignupData({
+          name: "",
+          email: "",
+          password: "",
+          passwordConfirmation: "",
+        });
+        setSignupErrors({
+          name: "",
+          email: "",
+          password: "",
+          passwordConfirmation: "",
+        });
+
+        // Mudar para tela de login após 1 segundo
+        setIsLogin(true);
       }
     } catch (err) {
       console.error("Erro no cadastro:", err);
-      setEmailError("Erro ao criar conta. Tente novamente.");
+      toast.error("Erro ao criar conta. Tente novamente.");
     } finally {
-      setLoading(false);
+      setSignupLoading(false);
     }
+  };
+
+  const [signIn, { loading: loginLoading }] = useLazyQuery(SIGN_IN, {
+    onCompleted: (data) => {
+      if (data?.signIn?.token) {
+        setToken(data.signIn.token);
+
+        const user = {
+          id: data.signIn.id,
+          name: data.signIn.name,
+          email: data.signIn.email,
+          token: data.signIn.token,
+        };
+
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("name", user.name);
+
+        // Atualizar o contexto com o nome do usuário
+        setUserName(user.name);
+
+        toast.success("Login realizado com sucesso! Redirecionando...");
+
+        // setTimeout(() => navigate("/home"), 1500);
+      } else {
+        setLoginError("Credenciais inválidas. Verifique e tente novamente.");
+        toast.error("Credenciais inválidas. Verifique e tente novamente.");
+      }
+    },
+    onError: (error) => {
+      const errorMessage = "Erro ao fazer login. Verifique suas credenciais.";
+      setLoginError(errorMessage);
+      toast.error(errorMessage);
+      console.log(error);
+    },
+  });
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+
+    if (!loginEmail.trim()) {
+      toast.error("Por favor, preencha o email.");
+      return;
+    }
+
+    if (!loginPassword.trim()) {
+      toast.error("Por favor, preencha a senha.");
+      return;
+    }
+
+    if (loginPassword.length < 8) {
+      toast.error("A senha deve ter no mínimo 8 caracteres.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(loginEmail)) {
+      toast.error("Por favor, insira um email válido.");
+      return;
+    }
+
+    signIn({ variables: { email: loginEmail, password: loginPassword } });
   };
 
   return (
@@ -166,7 +257,10 @@ export function AuthModal({}: AuthModalProps) {
               : "Cadastre-se para jogar"}
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form
+            onSubmit={isLogin ? handleLoginSubmit : handleSignupSubmit}
+            className="flex flex-col gap-5"
+          >
             {!isLogin && (
               <div>
                 <div className="flex flex-col gap-2">
@@ -178,18 +272,18 @@ export function AuthModal({}: AuthModalProps) {
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
+                    value={signupData.name}
                     name="name"
-                    onChange={handleInputChange}
+                    onChange={handleSignupInputChange}
                     required={!isLogin}
                     placeholder="Nome"
                     className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base transition-all outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                   />
                 </div>
 
-                {nameError && (
+                {signupErrors.name && (
                   <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm text-center border border-red-200">
-                    {nameError}
+                    {signupErrors.name}
                   </div>
                 )}
               </div>
@@ -204,18 +298,22 @@ export function AuthModal({}: AuthModalProps) {
               </label>
               <input
                 type="email"
-                value={formData.email}
+                value={isLogin ? loginEmail : signupData.email}
                 name="email"
-                onChange={handleInputChange}
+                onChange={
+                  isLogin
+                    ? (e) => setLoginEmail(e.target.value)
+                    : handleSignupInputChange
+                }
                 required
                 placeholder="xxxx@email.com"
                 className="px-4 py-3 border-2 border-gray-200 rounded-lg text-base transition-all outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
             </div>
 
-            {emailError && (
+            {!isLogin && signupErrors.email && (
               <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm text-center border border-red-200">
-                {emailError}
+                {signupErrors.email}
               </div>
             )}
 
@@ -230,11 +328,15 @@ export function AuthModal({}: AuthModalProps) {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
+                  value={isLogin ? loginPassword : signupData.password}
+                  onChange={
+                    isLogin
+                      ? (e) => setLoginPassword(e.target.value)
+                      : handleSignupInputChange
+                  }
                   required
                   placeholder="Sua senha"
-                  minLength={6}
+                  minLength={8}
                   className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg text-base transition-all outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
                 <button
@@ -251,9 +353,9 @@ export function AuthModal({}: AuthModalProps) {
               </div>
             </div>
 
-            {passwordError && (
+            {!isLogin && signupErrors.password && (
               <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm text-center border border-red-200">
-                {passwordError}
+                {signupErrors.password}
               </div>
             )}
             {!isLogin && (
@@ -268,12 +370,12 @@ export function AuthModal({}: AuthModalProps) {
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
-                      value={formData.passwordConfirmation}
+                      value={signupData.passwordConfirmation}
                       name="passwordConfirmation"
-                      onChange={handleInputChange}
+                      onChange={handleSignupInputChange}
                       required
                       placeholder="Confirme sua senha"
-                      minLength={6}
+                      minLength={8}
                       className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg text-base transition-all outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                     />
                     <button
@@ -292,9 +394,9 @@ export function AuthModal({}: AuthModalProps) {
                   </div>
                 </div>
 
-                {passwordConfirmationError && (
+                {signupErrors.passwordConfirmation && (
                   <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm text-center border border-red-200">
-                    {passwordConfirmationError}
+                    {signupErrors.passwordConfirmation}
                   </div>
                 )}
               </div>
@@ -303,9 +405,17 @@ export function AuthModal({}: AuthModalProps) {
             <button
               type="submit"
               className="bg-blue-500 text-white px-6 py-3.5 rounded-lg text-base font-semibold cursor-pointer transition-all mt-2 hover:bg-blue-600 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-              disabled={loading || (!isLogin && !isFormValid)}
+              disabled={
+                isLogin ? loginLoading : signupLoading || !isSignupFormValid
+              }
             >
-              {loading ? "Carregando..." : isLogin ? "Entrar" : "Criar Conta"}
+              {isLogin
+                ? loginLoading
+                  ? "Carregando..."
+                  : "Entrar"
+                : signupLoading
+                ? "Carregando..."
+                : "Criar Conta"}
             </button>
           </form>
 
@@ -316,13 +426,18 @@ export function AuthModal({}: AuthModalProps) {
                 type="button"
                 onClick={() => {
                   setIsLogin(!isLogin);
-                  // Limpar erros ao alternar entre login e cadastro
-                  setNameError("");
-                  setEmailError("");
-                  setPasswordError("");
-                  setPasswordConfirmationError("");
-                  // Limpar formulário
-                  setFormData({
+                  // Limpar estados de login
+                  setLoginEmail("");
+                  setLoginPassword("");
+                  setLoginError("");
+                  // Limpar estados de cadastro
+                  setSignupData({
+                    name: "",
+                    email: "",
+                    password: "",
+                    passwordConfirmation: "",
+                  });
+                  setSignupErrors({
                     name: "",
                     email: "",
                     password: "",

@@ -1,41 +1,63 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from "react";
 
 interface TokenContextType {
-    token: string | null;
-    setToken: (token: string) => void;
-    getToken: () => string;
+  token: string | null;
+  setToken: (token: string) => void;
+  getToken: () => string;
+  userName: string | null;
+  setUserName: (name: string) => void;
 }
 
 interface TokenProviderProps {
-    children: ReactNode;
+  children: ReactNode;
 }
 
 const TokenContext = createContext<TokenContextType | undefined>(undefined);
 
 export const TokenProvider = ({ children }: TokenProviderProps) => {
+  const [token, setTokenState] = useState<string>(() => {
+    const savedToken = localStorage.getItem("token");
+    return savedToken || "";
+  });
 
-    const [token, setTokenState] = useState<string>('');
+  const [userName, setUserNameState] = useState<string>(() => {
+    const savedName = localStorage.getItem("name");
+    return savedName || "";
+  });
 
-    const setToken = (newToken: string) => {
-        setTokenState(newToken);
-        if (newToken) {
-            localStorage.setItem('token', newToken);
-        }
-    };
+  const setToken = (newToken: string) => {
+    setTokenState(newToken);
+    if (newToken) {
+      localStorage.setItem("token", newToken);
+    } else {
+      localStorage.removeItem("token");
+    }
+  };
 
-    const getToken = () => token;
+  const setUserName = (name: string) => {
+    setUserNameState(name);
+    if (name) {
+      localStorage.setItem("name", name);
+    } else {
+      localStorage.removeItem("name");
+    }
+  };
 
-    return (
-        <TokenContext.Provider value={{ token, setToken, getToken}}>
-            {children}
-        </TokenContext.Provider>
-    );
+  const getToken = () => token;
+
+  return (
+    <TokenContext.Provider
+      value={{ token, setToken, getToken, userName, setUserName }}
+    >
+      {children}
+    </TokenContext.Provider>
+  );
 };
 
 export const useToken = () => {
-    const context = useContext(TokenContext);
-    if (!context) {
-        throw new Error('useToken must be used within a TokenProvider');
-    }
-    return context;
+  const context = useContext(TokenContext);
+  if (!context) {
+    throw new Error("useToken must be used within a TokenProvider");
+  }
+  return context;
 };

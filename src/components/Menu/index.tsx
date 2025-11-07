@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/images/GoFit Logo1.png";
+import { useToken } from "../../hooks/useToken";
 
 interface Menu {
   onToggleMenu: (isOpen: boolean) => void;
@@ -26,11 +27,10 @@ export function Menu({ onToggleMenu }: Menu) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNutritionOpen, setIsNutritionOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { userName } = useToken();
 
-  // Use useRef para o timeout evitar memory leaks
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Limpar timeout ao desmontar
   useEffect(() => {
     return () => {
       if (closeTimeoutRef.current) {
@@ -38,6 +38,8 @@ export function Menu({ onToggleMenu }: Menu) {
       }
     };
   }, []);
+
+  const userSignedIn = userName;
 
   const handleMouseEnter = () => {
     if (closeTimeoutRef.current) {
@@ -58,7 +60,6 @@ export function Menu({ onToggleMenu }: Menu) {
     if (section) {
       section.scrollIntoView({ behavior: "smooth" });
     }
-    // Fecha o menu e notifica o pai
     setIsMenuOpen(false);
     onToggleMenu(false);
   };
@@ -226,14 +227,22 @@ export function Menu({ onToggleMenu }: Menu) {
                   Quem Somos
                 </button>
               </Link>
+
+              <div className="w-full text-left rounded-full p-3 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300">
+                <span className="text-white uppercase">{userSignedIn}</span>
+              </div>
             </div>
           </div>
         </div>
       ) : (
         // Menu Desktop
         <div className="md:fixed top-0 w-full shadow z-50 scroll-smooth">
-          <nav className="flex flex-col md:flex-row justify-evenly items-center p-4 gap-2 bg-roxo_menu rounded-md relative z-50">
-            <div className="flex justify-center items-center gap-2">
+          <nav
+            className={`flex flex-col md:flex-row  ${
+              userSignedIn ? "justify-between" : "justify-evenly"
+            } items-center p-4 gap-2 bg-roxo_menu rounded-md relative z-50`}
+          >
+            <div className="flex justify-center items-center gap-2 ">
               <Link
                 to="/home"
                 className="flex justify-center items-center gap-2"
@@ -271,61 +280,60 @@ export function Menu({ onToggleMenu }: Menu) {
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                   >
-                    <Link to={"/nutrition"}>
-                      <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
-                        <a
-                          href="#macro-micro"
-                          className="block w-full h-full"
-                          onClick={() => scrollToSection("macro-micro")}
-                        >
-                          Macro x Micro
-                        </a>
-                      </li>
-                      <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
-                        <a
-                          href="#caloria"
-                          className="block w-full h-full"
-                          onClick={() => scrollToSection("caloria")}
-                        >
-                          Caloria
-                        </a>
-                      </li>
-                      <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
-                        <a
-                          href="#info-nutricional"
-                          className="block w-full h-full"
-                          onClick={() => scrollToSection("info-nutricional")}
-                        >
-                          Info Nutricional
-                        </a>
-                      </li>
-                      <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
-                        <a
-                          href="#dieta"
-                          className="block w-full h-full"
-                          onClick={() => scrollToSection("dieta")}
-                        >
-                          Dieta
-                        </a>
-                      </li>
-                      <li
-                        className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer"
-                        onClick={() => scrollToSection("saude-mental")}
+                    <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
+                      <Link
+                        to="/nutrition#macro-micro"
+                        onClick={() => scrollToSection("macro-micro")}
+                        className="block w-full h-full"
                       >
-                        <a href="#saude-mental" className="block w-full h-full">
-                          Saúde Mental
-                        </a>
-                      </li>
-                      <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
-                        <a
-                          href="#fato-mito"
-                          className="block w-full h-full"
-                          onClick={() => scrollToSection("fato-mito")}
-                        >
-                          Fato x Mito
-                        </a>
-                      </li>
-                    </Link>
+                        Macro x Micro
+                      </Link>
+                    </li>
+                    <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
+                      <Link
+                        to="/nutrition#caloria"
+                        onClick={() => scrollToSection("caloria")}
+                        className="block w-full h-full"
+                      >
+                        Caloria
+                      </Link>
+                    </li>
+                    <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
+                      <Link
+                        to="/nutrition#info-nutricional"
+                        onClick={() => scrollToSection("info-nutricional")}
+                        className="block w-full h-full"
+                      >
+                        Info Nutricional
+                      </Link>
+                    </li>
+                    <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
+                      <Link
+                        to="/nutrition#dieta"
+                        onClick={() => scrollToSection("dieta")}
+                        className="block w-full h-full"
+                      >
+                        Dieta
+                      </Link>
+                    </li>
+                    <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
+                      <Link
+                        to="/nutrition#saude-mental"
+                        onClick={() => scrollToSection("saude-mental")}
+                        className="block w-full h-full"
+                      >
+                        Saúde Mental
+                      </Link>
+                    </li>
+                    <li className="bg-roxo_menu_hover hover:bg-roxo_menu px-3 py-3 rounded-2xl cursor-pointer">
+                      <Link
+                        to="/nutrition#fato-mito"
+                        onClick={() => scrollToSection("fato-mito")}
+                        className="block w-full h-full"
+                      >
+                        Fato x Mito
+                      </Link>
+                    </li>
                   </ul>
                 )}
               </div>
@@ -348,6 +356,12 @@ export function Menu({ onToggleMenu }: Menu) {
                 </button>
               </Link>
             </div>
+            {userSignedIn && (
+              <div className="rounded-full p-2 px-4 text-gray-50 font-sans text-xl transition-colors duration-300 ease-in-out">
+                Olá,{" "}
+                <span className="font-bold uppercase">{userSignedIn}!</span>
+              </div>
+            )}
           </nav>
         </div>
       )}
