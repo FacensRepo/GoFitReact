@@ -51,7 +51,7 @@ const IMCCalculator: React.FC = () => {
           id="weight"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          placeholder="Digite seu peso"
+          placeholder="Digite seu peso (Ex: 74)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
@@ -63,7 +63,7 @@ const IMCCalculator: React.FC = () => {
           id="height"
           value={height}
           onChange={(e) => setHeight(e.target.value)}
-          placeholder="Digite sua altura"
+          placeholder="Digite sua altura (Ex: 1,76)"
           step="0.01"
           className="w-full p-2 border border-gray-300 rounded"
         />

@@ -69,7 +69,7 @@ const TMBCalculator: React.FC = () => {
           id="age"
           value={age}
           onChange={(e) => setAge(e.target.value)}
-          placeholder="Digite sua idade"
+          placeholder="Digite sua idade (Ex: 21)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
@@ -81,7 +81,7 @@ const TMBCalculator: React.FC = () => {
           id="weight"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          placeholder="Digite seu peso"
+          placeholder="Digite seu peso (Ex: 74)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
@@ -93,7 +93,7 @@ const TMBCalculator: React.FC = () => {
           id="height"
           value={height}
           onChange={(e) => setHeight(e.target.value)}
-          placeholder="Digite sua altura"
+          placeholder="Digite sua altura (Ex: 1,76)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>

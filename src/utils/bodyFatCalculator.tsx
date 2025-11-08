@@ -86,6 +86,7 @@ const BodyFatCalculator: React.FC = () => {
           id="waist"
           value={waist}
           onChange={(e) => setWaist(e.target.value)}
+          placeholder="Digite a medida de sua cintura (Ex: 74)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
@@ -97,6 +98,7 @@ const BodyFatCalculator: React.FC = () => {
           id="neck"
           value={neck}
           onChange={(e) => setNeck(e.target.value)}
+          placeholder="Digite a medida de seu pescoço (Ex: 74)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
@@ -108,6 +110,7 @@ const BodyFatCalculator: React.FC = () => {
           id="height"
           value={height}
           onChange={(e) => setHeight(e.target.value)}
+          placeholder="Digite sua altura (Ex: 184)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>

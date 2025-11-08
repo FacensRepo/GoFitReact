@@ -86,7 +86,7 @@ const IdealWeightCalculator: React.FC = () => {
           id="height"
           value={height}
           onChange={(e) => setHeight(e.target.value)}
-          placeholder="Digite sua altura"
+          placeholder="Digite sua altura em cm (Ex: 184)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>

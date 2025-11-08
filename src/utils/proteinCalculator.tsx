@@ -46,7 +46,7 @@ const ProteinCalculator: React.FC = () => {
           id="weight"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          placeholder="Digite seu peso"
+          placeholder="Digite seu peso (Ex: 74)"
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
