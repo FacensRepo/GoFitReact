@@ -1,35 +1,118 @@
 import { Menu } from "../../components/Menu";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check } from "lucide-react";
 import { ProtectedGamePage } from "../../components/ProtectedGamePage";
+import { useMutation, useQuery } from "@apollo/client";
+import { CREATE_HISTORIC } from "../../mutations/createHistoric";
+import { LIST_GAME_TYPE } from "../../queries/listGameType";
+import { startOfWeek, addDays, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export function Checkin() {
   const [_isMenuOpen, setIsMenuOpen] = useState(false);
+  const [createHistoric] = useMutation(CREATE_HISTORIC);
+  const { data: gameTypeData } = useQuery(LIST_GAME_TYPE);
 
   const handleToggleMenu = (isOpen: boolean) => {
     setIsMenuOpen(isOpen);
   };
 
-  // Dias da semana com exemplo de check-in (hardcoded para demonstração)
-  const daysOfWeek = [
-    { day: "DOM", date: "03", checked: false },
-    { day: "SEG", date: "04", checked: true },
-    { day: "TER", date: "05", checked: true },
-    { day: "QUA", date: "06", checked: false },
-    { day: "QUI", date: "07", checked: true },
-    { day: "SEX", date: "08", checked: false },
-    { day: "SAB", date: "09", checked: false },
-  ];
-
-  // Estado para controlar quais dias estão marcados (para demonstração da interação)
-  const [checkedDays, setCheckedDays] = useState(
-    daysOfWeek.map((day) => day.checked)
+  // Buscar o game type "Checkin"
+  const selectedGame = gameTypeData?.listGameType?.results.find(
+    (gameType: any) => gameType.name === "Checkin"
   );
 
+  // Gerar os dias da semana atual com datas reais
+  const generateWeekDays = () => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Domingo = 0
+
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = addDays(weekStart, index);
+      return {
+        day: format(date, "EEE", { locale: ptBR }).toUpperCase().slice(0, 3),
+        date: format(date, "dd"),
+        fullDate: format(date, "yyyy-MM-dd"),
+        dateObj: date,
+      };
+    });
+  };
+
+  const [daysOfWeek] = useState(generateWeekDays());
+
+  // Carregar check-ins do localStorage
+  const loadCheckedDays = () => {
+    const stored = localStorage.getItem("checkin-week");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // Verificar se é da mesma semana
+        const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 0 }), "yyyy-MM-dd");
+        if (parsed.weekStart === weekStart) {
+          return parsed.checkedDays;
+        }
+      } catch (e) {
+        console.error("Erro ao carregar check-ins:", e);
+      }
+    }
+    return Array(7).fill(false);
+  };
+
+  const [checkedDays, setCheckedDays] = useState<boolean[]>(loadCheckedDays());
+  const [weekCompleted, setWeekCompleted] = useState(false);
+
+  // Salvar check-ins no localStorage sempre que mudar
+  useEffect(() => {
+    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 0 }), "yyyy-MM-dd");
+    localStorage.setItem("checkin-week", JSON.stringify({
+      weekStart,
+      checkedDays,
+    }));
+
+    // Verificar se completou a semana
+    const allChecked = checkedDays.every((checked) => checked);
+    if (allChecked && !weekCompleted) {
+      setWeekCompleted(true);
+      handleSubmit();
+    }
+  }, [checkedDays]);
+
   const handleDayClick = (index: number) => {
+    // Verificar se o dia já passou ou é hoje
+    const dayDate = daysOfWeek[index].dateObj;
+    const today = new Date();
+
+    if (dayDate > today) {
+      // Não permitir marcar dias futuros
+      return;
+    }
+
     const newCheckedDays = [...checkedDays];
     newCheckedDays[index] = !newCheckedDays[index];
     setCheckedDays(newCheckedDays);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const userString = localStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+
+      const result = {
+        points: 100, // 100 pontos por semana completa
+        userId: user?.id || "",
+        gameTypeId: selectedGame?.id,
+      };
+
+      await createHistoric({
+        variables: {
+          input: result,
+        },
+      });
+
+      console.log("Histórico salvo com sucesso!", result);
+    } catch (error) {
+      console.error("Erro ao salvar o histórico:", error);
+    }
   };
 
   // Calcular estatísticas

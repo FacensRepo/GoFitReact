@@ -14,6 +14,7 @@
     "@google/genai": "^1.28.0",
     "@heroicons/react": "^2.2.0",
     "autoprefixer": "^10.4.21",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.9.4",
     "graphql": "^16.10.0",
     "lucide-react": "^0.552.0",

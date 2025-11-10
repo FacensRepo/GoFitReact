@@ -228,9 +228,12 @@ export function Menu({ onToggleMenu }: Menu) {
                 </button>
               </Link>
 
-              <div className="w-full text-left rounded-full p-3 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300">
-                <span className="text-white uppercase">{userSignedIn}</span>
-              </div>
+              {userSignedIn && (
+                <div className="w-full text-left rounded-full p-3 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300">
+                  Olá,{" "}
+                  <span className="font-bold uppercase">{userSignedIn}</span>!
+                </div>
+              )}
             </div>
           </div>
         </div>

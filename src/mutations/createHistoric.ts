@@ -1,10 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const CREATE_HISTORIC = gql`
-mutation CreateHistoricType {
-    createHistoricType(
-        $input: CreateHistoricTypeInput!
-    ) {
+mutation CreateHistoricType($input: CreateHistoricTypeInput!) {
+    createHistoricType(input: $input) {
         result {
             createdAt
             gameTypeId

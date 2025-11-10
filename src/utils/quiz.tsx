@@ -1,4 +1,7 @@
+import { useMutation, useQuery } from "@apollo/client";
 import React, { useState } from "react";
+import { CREATE_HISTORIC } from "../mutations/createHistoric";
+import { LIST_GAME_TYPE } from "../queries/listGameType";
 
 type Pergunta = {
   pergunta: string;
@@ -107,6 +110,14 @@ const Quiz: React.FC = () => {
   const [respostaCerta, setRespostaCerta] = useState(false);
   const [mostrarResultado, setMostrarResultado] = useState(false);
 
+  const [creteHistoric] = useMutation(CREATE_HISTORIC);
+
+  const { data: gameTypeData } = useQuery(LIST_GAME_TYPE);
+
+  const selectedGame = gameTypeData?.listGameType?.results.find(
+    (gameType: any) => gameType.name === "Quiz"
+  );
+
   const pergunta = perguntas[perguntaAtual];
 
   const handleResposta = (resposta: boolean) => {
@@ -123,6 +134,7 @@ const Quiz: React.FC = () => {
       setRespondeu(false);
     } else {
       setMostrarResultado(true);
+      handleSubmit();
     }
   };
 
@@ -131,6 +143,29 @@ const Quiz: React.FC = () => {
     setPontuacao(0);
     setRespondeu(false);
     setMostrarResultado(false);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const userString = localStorage.getItem("user");
+      const user = userString ? JSON.parse(userString) : null;
+
+      const result = {
+        points: Math.round(pontuacao / 5),
+        userId: user?.id || "",
+        gameTypeId: selectedGame?.id,
+      };
+
+      await creteHistoric({
+        variables: {
+          input: result,
+        },
+      });
+
+      console.log(result);
+    } catch (error) {
+      console.error("Erro ao salvar o histórico:", error);
+    }
   };
 
   const getMensagem = () => {
