@@ -1,5 +1,5 @@
 import { Menu } from "../../components/Menu";
-import running from "../../assets/images/running.png";
+import running from "../../assets/images/Foto home 2 (1).png";
 import nutricao from "../../assets/images/nutricao.jpeg";
 import academia from "../../assets/images/academia.jpg";
 import calculadora from "../../assets/images/calculadora.jpg";
@@ -32,11 +32,11 @@ export function Home() {
                   inspiração para exercícios físicos
                 </p>
               </div>
-              <div className="flex-1 w-full max-w-md md:max-w-lg order-1 md:order-2">
+              <div className="flex w-full max-w-md md:max-w-lg order-1 md:order-2">
                 <img
                   src={running}
                   alt="Pessoas correndo"
-                  className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl transform hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain drop-shadow-2xl rounded-2xl transform hover:scale-105 transition-transform duration-300"
                 />
               </div>
             </div>

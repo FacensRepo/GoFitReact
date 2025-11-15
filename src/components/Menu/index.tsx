@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/GoFit Logo1.png";
 import { useToken } from "../../hooks/useToken";
+import { ArrowLeftEndOnRectangleIcon } from "@heroicons/react/24/solid";
 
 interface Menu {
   onToggleMenu: (isOpen: boolean) => void;
@@ -25,9 +26,12 @@ function useIsMobile(breakpoint: number = 768): boolean {
 export function Menu({ onToggleMenu }: Menu) {
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuUserOpen, setIsMenuUserOpen] = useState(false);
   const [isNutritionOpen, setIsNutritionOpen] = useState(false);
   const isMobile = useIsMobile();
-  const { userName } = useToken();
+  const { userName, setToken, setUserName } = useToken();
+
+  const navigate = useNavigate();
 
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -78,10 +82,28 @@ export function Menu({ onToggleMenu }: Menu) {
     }
   };
 
+  const handleToggleUser = () => {
+    const newState = !isMenuUserOpen;
+    setIsMenuUserOpen(newState);
+    onToggleMenu(newState);
+
+    if (!newState) {
+      setIsNutritionOpen(false);
+    }
+  };
+
   const handleMenuItemClick = () => {
     setIsMenuOpen(false);
     onToggleMenu(false);
     setIsNutritionOpen(false);
+  };
+
+  const handleLogout = () => {
+    setToken("");
+    setUserName("");
+    localStorage.removeItem("user");
+    setIsMenuUserOpen(false);
+    navigate("/home");
   };
 
   return (
@@ -229,9 +251,40 @@ export function Menu({ onToggleMenu }: Menu) {
               </Link>
 
               {userSignedIn && (
-                <div className="w-full text-left rounded-full p-3 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300">
-                  Olá,{" "}
-                  <span className="font-bold uppercase">{userSignedIn}</span>!
+                <div>
+                  <button
+                    onClick={handleToggleUser}
+                    className="w-full text-left rounded-full p-3 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300 flex justify-between items-center"
+                  >
+                    <span>
+                      Olá,{" "}
+                      <span className="font-bold uppercase">
+                        {userSignedIn}
+                      </span>
+                      !
+                    </span>
+                    <span
+                      className={`transform transition-transform ${
+                        isMenuUserOpen ? "rotate-180" : ""
+                      }`}
+                    >
+                      ▼
+                    </span>
+                  </button>
+
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      isMenuUserOpen ? "max-h-20" : "max-h-0"
+                    }`}
+                  >
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left rounded-2xl p-3 px-4 ml-4 text-gray-50 font-sans text-lg hover:bg-roxo_menu_hover transition-colors flex items-center gap-2"
+                    >
+                      <ArrowLeftEndOnRectangleIcon className="w-5 h-5" />
+                      Sair
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -360,9 +413,33 @@ export function Menu({ onToggleMenu }: Menu) {
               </Link>
             </div>
             {userSignedIn && (
-              <div className="rounded-full p-2 px-4 text-gray-50 font-sans text-xl transition-colors duration-300 ease-in-out">
-                Olá,{" "}
-                <span className="font-bold uppercase">{userSignedIn}!</span>
+              <div className="relative">
+                <button
+                  onClick={handleToggleUser}
+                  className="rounded-full p-2 px-4 text-gray-50 font-sans text-xl hover:bg-roxo_menu_hover transition-colors duration-300 ease-in-out"
+                >
+                  Olá,{" "}
+                  <span className="font-bold uppercase">{userSignedIn}!</span>
+                  <span
+                    className={`ml-2 inline-block transition-transform ${
+                      isMenuUserOpen ? "rotate-180" : ""
+                    }`}
+                  >
+                    ▼
+                  </span>
+                </button>
+
+                {isMenuUserOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-40 bg-roxo_menu_hover rounded-2xl text-white shadow-lg p-2 z-50">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left bg-roxo_menu_hover hover:bg-roxo_menu px-4 py-3 rounded-xl cursor-pointer flex items-center gap-2"
+                    >
+                      <ArrowLeftEndOnRectangleIcon className="w-5 h-5" />
+                      Sair
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </nav>
