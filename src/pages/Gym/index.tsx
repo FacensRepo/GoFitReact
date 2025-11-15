@@ -284,20 +284,32 @@ Sexta-feira:
               {
                 img: strap,
                 name: "Strap para Treino",
+                link: "https://www.gsuplementos.com.br/fita-strap-faixa-vermelha-growth-par-growth-supplements",
               },
-              { img: whey, name: "Whey Protein" },
+              {
+                img: whey,
+                name: "Whey Protein",
+                link: "https://www.gsuplementos.com.br/whey-protein-concentrado-1kg-growth-supplements-p985936 ",
+              },
               {
                 img: hipercalorico,
                 name: "Hipercalórico",
+                link: "https://www.gsuplementos.com.br/top-hipercalorico-sabor-chocolate-1kg-growth-supplements-p985809 ",
               },
               {
                 img: pretreino,
                 name: "Pré-Treino",
+                link: "https://www.gsuplementos.com.br/pre-treino-haze-hardcore-300gr-growth-supplements",
               },
-              { img: creatina, name: "Creatina" },
+              {
+                img: creatina,
+                name: "Creatina",
+                link: "https://www.gsuplementos.com.br/creatina-monohidratada-250gr-growth-supplements-p985931 ",
+              },
               {
                 img: coqueteleira,
                 name: "Coqueteleira",
+                link: "https://www.gsuplementos.com.br/coqueteleira-simples-branca-growth-supplements",
               },
             ].map((product, idx) => (
               <div
@@ -322,11 +334,12 @@ Sexta-feira:
                     Produto de alta qualidade para melhorar seu desempenho e
                     resultados na academia.
                   </p>
-                  <button
+                  <a
+                    href={product.link}
                     className={`w-full bg-purple-600 hover:bg-purple-700  transition-all duration-300 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transform`}
                   >
                     Ver Produto
-                  </button>
+                  </a>
                 </div>
               </div>
             ))}
