@@ -10,6 +10,7 @@ mutation CreateHistoricType($input: CreateHistoricTypeInput!) {
             points
             updateAt
             userId
+            checkinId
         }
     }
 }

@@ -1,11 +1,12 @@
 import { Menu } from "../../components/Menu";
 import { useState, useEffect } from "react";
-import { Check } from "lucide-react";
+import { Check, Trophy } from "lucide-react";
 import { ProtectedGamePage } from "../../components/ProtectedGamePage";
 import { useMutation, useQuery } from "@apollo/client";
 import { CREATE_HISTORIC } from "../../mutations/createHistoric";
 import { LIST_GAME_TYPE } from "../../queries/listGameType";
 import { LIST_USER_CHECKINS } from "../../queries/listUserCheckins";
+import { WEEKLY_RANKING } from "../../queries/weeklyRanking";
 import { CREATE_CHECKIN } from "../../mutations/createCheckin";
 import { DELETE_CHECKIN } from "../../mutations/deleteCheckin";
 import { startOfWeek, addDays, format } from "date-fns";
@@ -31,6 +32,12 @@ export function Checkin() {
       notifyOnNetworkStatusChange: true,
     }
   );
+
+  const { data: rankingData } = useQuery(WEEKLY_RANKING, {
+    fetchPolicy: "cache-and-network",
+  });
+
+  console.log("Ranking Data:", rankingData);
 
   const handleToggleMenu = (isOpen: boolean) => {
     setIsMenuOpen(isOpen);
@@ -99,7 +106,6 @@ export function Checkin() {
     const allChecked = checkedDays.every((checked) => checked);
     if (allChecked && !weekCompleted) {
       setWeekCompleted(true);
-      handleSubmit();
     }
   }, [checkedDays, weekCompleted]);
 
@@ -138,10 +144,16 @@ export function Checkin() {
           },
         });
 
+        const checkinId = result.data.createCheckin.result.id;
+
+        await handleSubmit(checkinId);
+
+        console.log("Check-in criado:", result);
+
         const newCheckedDays = [...checkedDays];
         const newCheckinIds = [...checkinIds];
         newCheckedDays[index] = true;
-        newCheckinIds[index] = result.data.createCheckin.result.id;
+        newCheckinIds[index] = checkinId;
         setCheckedDays(newCheckedDays);
         setCheckinIds(newCheckinIds);
       }
@@ -152,15 +164,16 @@ export function Checkin() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (checkinId: string) => {
     try {
       const userString = localStorage.getItem("user");
       const user = userString ? JSON.parse(userString) : null;
 
       const result = {
-        points: 100,
+        points: 25,
         userId: user?.id || "",
         gameTypeId: selectedGame?.id,
+        checkinId: checkinId,
       };
 
       await createHistoric({
@@ -177,6 +190,30 @@ export function Checkin() {
 
   const totalCheckins = checkedDays.filter((checked) => checked).length;
   const streak = checkedDays.filter((checked) => checked).length;
+
+  // Process ranking data
+  const getRanking = () => {
+    if (!rankingData?.weeklyRanking) return [];
+
+    const usersWithPoints = rankingData.weeklyRanking.map((user: any) => {
+      const totalPoints = user.userHistorics.reduce(
+        (sum: number, historic: any) => sum + historic.points,
+        0
+      );
+      return {
+        id: user.id,
+        name: user.name,
+        totalPoints,
+      };
+    });
+
+    // Sort by points (descending) and take top 10
+    return usersWithPoints
+      .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
+      .slice(0, 10);
+  };
+
+  const ranking = getRanking();
 
   return (
     <ProtectedGamePage>
@@ -316,6 +353,104 @@ export function Checkin() {
                       Parabéns! Você atingiu sua meta semanal!
                     </p>
                   </div>
+                )}
+              </div>
+            </div>
+
+            {/* Card de Ranking */}
+            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mt-8">
+              <div className="flex items-center gap-3 mb-8">
+                <Trophy className="w-8 h-8 text-yellow-500" />
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Melhores Atletas da Semana
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                {ranking.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">
+                    Nenhum atleta registrado esta semana
+                  </p>
+                ) : (
+                  ranking.map((athlete: any, index: number) => {
+                    const position = index + 1;
+                    const isTop3 = position <= 3;
+                    const medalColors = {
+                      1: "from-yellow-400 to-yellow-600",
+                      2: "from-gray-300 to-gray-500",
+                      3: "from-orange-400 to-orange-600",
+                    };
+
+                    return (
+                      <div
+                        key={athlete.id}
+                        className={`
+                          flex items-center justify-between p-4 rounded-2xl
+                          transition-all duration-300 hover:scale-102
+                          ${
+                            isTop3
+                              ? "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200"
+                              : "bg-gray-50 border-2 border-gray-200"
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-4">
+                          {/* Position Badge */}
+                          <div
+                            className={`
+                              flex items-center justify-center w-12 h-12 rounded-full
+                              font-bold text-lg
+                              ${
+                                isTop3
+                                  ? `bg-gradient-to-br ${
+                                      medalColors[
+                                        position as keyof typeof medalColors
+                                      ]
+                                    } text-white shadow-lg`
+                                  : "bg-gray-200 text-gray-700"
+                              }
+                            `}
+                          >
+                            {position}
+                          </div>
+
+                          {/* Name */}
+                          <div>
+                            <p
+                              className={`
+                                font-bold
+                                ${
+                                  isTop3
+                                    ? "text-lg text-purple-900"
+                                    : "text-gray-800"
+                                }
+                              `}
+                            >
+                              {athlete.name}
+                            </p>
+                            {position === 1 && (
+                              <p className="text-xs text-purple-600 font-medium">
+                                Atleta da Semana
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Points */}
+                        <div className="text-right">
+                          <p
+                            className={`
+                              text-2xl font-bold
+                              ${isTop3 ? "text-purple-600" : "text-gray-700"}
+                            `}
+                          >
+                            {athlete.totalPoints}
+                          </p>
+                          <p className="text-xs text-gray-500">pontos</p>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
