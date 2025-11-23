@@ -80,13 +80,13 @@ const perguntas: Pergunta[] = [
     pergunta: "Glúten faz mal para todo mundo.",
     resposta: false,
     explicacao:
-      "Falso. O glúten só faz mal para pessoas com doença celíaca ou sensibilidade ao glúten. Para a maioria das pessoas, ele é seguro e não causa problemas.",
+      "Falso. Apesar de ser uma substância com potencial inflamatório e alergênico, o glúten só faz mal para pessoas com doença celíaca ou sensibilidade ao glúten, assim, para a maioria das pessoas, ele é seguro e não causa problemas.",
   },
   {
     pergunta: "Comer banana previne cãibras.",
     resposta: true,
     explicacao:
-      "Verdadeiro. A banana é rica em potássio, um mineral importante para a prevenção de cãibras musculares.",
+      "Verdadeiro. A banana é rica em potássio, um mineral importante para a prevenção de cãibras musculares. No entanto, cãibras podem ter causas diversas como esforço muscular em demasia, desidratação e, como neste caso, a carência de potássio causaria a cãibra.",
   },
   {
     pergunta: "Dietas sem carboidratos são mais saudáveis.",
@@ -99,7 +99,7 @@ const perguntas: Pergunta[] = [
       "O consumo de frutas e vegetais reduz o risco de doenças crônicas.",
     resposta: true,
     explicacao:
-      "Verdadeiro. Frutas e vegetais são ricos em vitaminas, minerais e antioxidantes, que ajudam a prevenir doenças como diabetes, hipertensão e problemas cardíacos.",
+      "Verdadeiro. Frutas e vegetais são ricos em vitaminas, minerais e antioxidantes, que ajudam a prevenir doenças como diabetes, hipertensão e problemas cardíacos. Mas vale lembrar que devem ser mantidos hábitos saudáveis aliado ao consumo de frutas e vegetais, apenas consumi-las mas ter hábitos que prejudicam a saúde, como fumar e ingerir alimentos gordurosos, não irá reduzir os riscos de doenças.",
   },
 ];
 

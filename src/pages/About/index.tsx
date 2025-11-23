@@ -10,27 +10,27 @@ export function About() {
   };
 
   // Adicione as informações dos integrantes aqui
-  // const teamMembers = [
-  //   {
-  //     name: "Membro 1",
-  //     // role: "Desenvolvedor Full Stack",
-  //     image: "https://via.placeholder.com/200", // Substitua com foto real
-  //     description: "Apaixonado por tecnologia e saúde",
-  //   },
-  //   {
-  //     name: "Membro 2",
-  //     // role: "Designer UI/UX",
-  //     image: "https://via.placeholder.com/200", // Substitua com foto real
-  //     description: "Criando experiências incríveis",
-  //   },
-  //   {
-  //     name: "Membro 3",
-  //     // role: "Especialista em Nutrição",
-  //     image: "https://via.placeholder.com/200", // Substitua com foto real
-  //     description: "Compartilhando conhecimento",
-  //   },
-  //   // Adicione mais membros conforme necessário
-  // ];
+  const teamMembers = [
+    {
+      name: "Membro 1",
+      // role: "Desenvolvedor Full Stack",
+      image: "https://via.placeholder.com/200", // Substitua com foto real
+      description: "Apaixonado por tecnologia e saúde",
+    },
+    {
+      name: "Membro 2",
+      // role: "Designer UI/UX",
+      image: "https://via.placeholder.com/200", // Substitua com foto real
+      description: "Criando experiências incríveis",
+    },
+    {
+      name: "Membro 3",
+      // role: "Especialista em Nutrição",
+      image: "https://via.placeholder.com/200", // Substitua com foto real
+      description: "Compartilhando conhecimento",
+    },
+    // Adicione mais membros conforme necessário
+  ];
 
   return (
     <div className="bg-gradient-to-b from-white via-purple-50 to-pink-50">
@@ -158,6 +158,47 @@ export function About() {
       </section>
 
       {/* Team Section */}
+      <section className="py-20 bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="text-center mb-16">
+            <div className="space-y-6">
+              <h2 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                👥 Nossa Equipe
+              </h2>
+              <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+                Conheça as pessoas que tornam este projeto possível
+              </p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {teamMembers.map((member, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-3xl shadow-2xl overflow-hidden transform hover:scale-105 transition-all duration-500 border-4 border-purple-200"
+              >
+                <div className="relative h-64 bg-gradient-to-br from-purple-400 to-pink-400">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover opacity-90"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold text-purple-900 mb-2">
+                    {member.name}
+                  </h3>
+                  {/* <p className="text-purple-600 font-semibold mb-3">
+                    {member.role}
+                  </p> */}
+                  <p className="text-gray-600">{member.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Special Thanks Section */}
       <section className="py-20 bg-white">
