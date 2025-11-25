@@ -6,11 +6,11 @@ import { useMutation, useQuery } from "@apollo/client";
 import { CREATE_HISTORIC } from "../../mutations/createHistoric";
 import { LIST_GAME_TYPE } from "../../queries/listGameType";
 import { LIST_USER_CHECKINS } from "../../queries/listUserCheckins";
-import { WEEKLY_RANKING } from "../../queries/weeklyRanking";
 import { CREATE_CHECKIN } from "../../mutations/createCheckin";
 import { DELETE_CHECKIN } from "../../mutations/deleteCheckin";
 import { startOfWeek, addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { LIST_RANK } from "../../queries/listRanking";
 
 export function Checkin() {
   const [_isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,11 +33,16 @@ export function Checkin() {
     }
   );
 
-  const { data: rankingData } = useQuery(WEEKLY_RANKING, {
-    fetchPolicy: "cache-and-network",
+  const { data: listRankData, refetch: refetchRanking } = useQuery(LIST_RANK, {
+    variables: {
+      sort: [
+        {
+          field: "USER_WEEKLY_POINTS",
+          order: "DESC",
+        },
+      ],
+    },
   });
-
-  console.log("Ranking Data:", rankingData);
 
   const handleToggleMenu = (isOpen: boolean) => {
     setIsMenuOpen(isOpen);
@@ -148,7 +153,7 @@ export function Checkin() {
 
         await handleSubmit(checkinId);
 
-        console.log("Check-in criado:", result);
+        // console.log("Check-in criado:", result);
 
         const newCheckedDays = [...checkedDays];
         const newCheckinIds = [...checkinIds];
@@ -157,7 +162,7 @@ export function Checkin() {
         setCheckedDays(newCheckedDays);
         setCheckinIds(newCheckinIds);
       }
-
+      await refetchRanking();
       await refetchCheckins();
     } catch (error) {
       console.error("Erro ao atualizar check-in:", error);
@@ -182,7 +187,7 @@ export function Checkin() {
         },
       });
 
-      console.log("Histórico salvo com sucesso!", result);
+      // console.log("Histórico salvo com sucesso!", result);
     } catch (error) {
       console.error("Erro ao salvar o histórico:", error);
     }
@@ -192,28 +197,28 @@ export function Checkin() {
   const streak = checkedDays.filter((checked) => checked).length;
 
   // Process ranking data
-  const getRanking = () => {
-    if (!rankingData?.weeklyRanking) return [];
+  // const getRanking = () => {
+  //   if (!rankingData?.weeklyRanking) return [];
 
-    const usersWithPoints = rankingData.weeklyRanking.map((user: any) => {
-      const totalPoints = user.userHistorics.reduce(
-        (sum: number, historic: any) => sum + historic.points,
-        0
-      );
-      return {
-        id: user.id,
-        name: user.name,
-        totalPoints,
-      };
-    });
+  //   const usersWithPoints = rankingData.weeklyRanking.map((user: any) => {
+  //     const totalPoints = user.userHistorics.reduce(
+  //       (sum: number, historic: any) => sum + historic.points,
+  //       0
+  //     );
+  //     return {
+  //       id: user.id,
+  //       name: user.name,
+  //       totalPoints,
+  //     };
+  //   });
 
-    // Sort by points (descending) and take top 10
-    return usersWithPoints
-      .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
-      .slice(0, 10);
-  };
+  //   // Sort by points (descending) and take top 10
+  //   return usersWithPoints
+  //     .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
+  //     .slice(0, 10);
+  // };
 
-  const ranking = getRanking();
+  // const ranking = getRanking();
 
   return (
     <ProtectedGamePage>
@@ -367,12 +372,12 @@ export function Checkin() {
               </div>
 
               <div className="space-y-4">
-                {ranking.length === 0 ? (
+                {listRankData?.listRank?.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">
                     Nenhum atleta registrado esta semana
                   </p>
                 ) : (
-                  ranking.map((athlete: any, index: number) => {
+                  listRankData?.listRank?.map((athlete: any, index: number) => {
                     const position = index + 1;
                     const isTop3 = position <= 3;
                     const medalColors = {
@@ -426,7 +431,7 @@ export function Checkin() {
                                 }
                               `}
                             >
-                              {athlete.name}
+                              {athlete?.user?.name}
                             </p>
                             {position === 1 && (
                               <p className="text-xs text-purple-600 font-medium">
@@ -444,7 +449,7 @@ export function Checkin() {
                               ${isTop3 ? "text-purple-600" : "text-gray-700"}
                             `}
                           >
-                            {athlete.totalPoints}
+                            {athlete.userWeeklyPoints}
                           </p>
                           <p className="text-xs text-gray-500">pontos</p>
                         </div>
